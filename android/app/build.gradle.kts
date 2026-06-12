@@ -5,9 +5,9 @@ plugins {
 }
 
 android {
-    ndkVersion = "27.0.12077973"
+    ndkVersion = "28.2.13676358"
     namespace = "com.savage.anime"
-    compileSdk = 34
+    compileSdk = 36
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
@@ -20,8 +20,8 @@ android {
 
     defaultConfig {
         applicationId = "com.savage.anime"
-        minSdk = 31
-        targetSdk = 34
+        minSdk = 31          // Android 12
+        targetSdk = 35       // Android 13 (o 34, ma 35 è stabile)
         versionCode = 1
         versionName = "1.0"
     }
@@ -29,7 +29,7 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = false
-            isShrinkResources = false   // <-- risolve l'errore
+            isShrinkResources = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
