@@ -5,20 +5,55 @@ workflows:
     environment:
       flutter: stable
     scripts:
-      - name: Genera keystore
+      - name: Debug variabili d'ambiente
         script: |
+          echo "=== VERIFICA VARIABILI D'AMBIENTE ==="
+          echo "CM_KEYSTORE_PASSWORD esistente? $(if [ -z "$CM_KEYSTORE_PASSWORD" ]; then echo NO; else echo SÌ; fi)"
+          echo "CM_KEY_PASSWORD esistente? $(if [ -z "$CM_KEY_PASSWORD" ]; then echo NO; else echo SÌ; fi)"
+          echo "CM_KEY_ALIAS esistente? $(if [ -z "$CM_KEY_ALIAS" ]; then echo NO; else echo SÌ; fi)"
+          echo "Lunghezza CM_KEYSTORE_PASSWORD: ${#CM_KEYSTORE_PASSWORD}"
+          echo "Lunghezza CM_KEY_PASSWORD: ${#CM_KEY_PASSWORD}"
+          echo "Lunghezza CM_KEY_ALIAS: ${#CM_KEY_ALIAS}"
+          echo "Caratteri speciali nella password possono causare problemi. Stampo i valori in esadecimale:"
+          echo -n "$CM_KEYSTORE_PASSWORD" | xxd | head -n 1
+          echo -n "$CM_KEY_PASSWORD" | xxd | head -n 1
+          echo "======================================"
+
+      - name: Genera keystore con debug
+        script: |
+          set -e
+          echo "=== GENERAZIONE KEYSTORE ==="
+          
+          # Salva le password in file temporanei per evitare qualsiasi problema di escape
+          printf '%s' "$CM_KEYSTORE_PASSWORD" > /tmp/storepass.txt
+          printf '%s' "$CM_KEY_PASSWORD" > /tmp/keypass.txt
+          
+          echo "Contenuto dei file password (hex):"
+          xxd /tmp/storepass.txt
+          xxd /tmp/keypass.txt
+          
+          echo "Esecuzione keytool..."
           keytool -genkeypair \
             -keystore android/app/upload-keystore.jks \
-            -storepass "$CM_KEYSTORE_PASSWORD" \
-            -keypass "$CM_KEY_PASSWORD" \
+            -storepass:file /tmp/storepass.txt \
+            -keypass:file /tmp/keypass.txt \
             -alias "$CM_KEY_ALIAS" \
             -keyalg RSA \
             -keysize 2048 \
             -validity 10000 \
-            -dname "CN=AnimeWorld, OU=App, O=AnimeWorld, L=Unknown, ST=Unknown, C=IT"
+            -dname "CN=AnimeWorld, OU=App, O=AnimeWorld, L=Unknown, ST=Unknown, C=IT" \
+            -J-Duser.language=en
+          
+          echo "Keystore generato con successo."
+          rm /tmp/storepass.txt /tmp/keypass.txt
+          
+          echo "=== FINE GENERAZIONE KEYSTORE ==="
+
       - name: Installa dipendenze
         script: flutter pub get
+
       - name: Build APK release
         script: flutter build apk --release
+
     artifacts:
       - build/app/outputs/flutter-apk/app-release.apk
