@@ -24,7 +24,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('SavageAnime',
+        title: const Text('AnimeWorld',
             style: TextStyle(fontWeight: FontWeight.bold)),
         actions: [
           IconButton(
