@@ -21,16 +21,16 @@ android {
     signingConfigs {
         create("release") {
             storeFile = file("upload-keystore.jks")
-            storePassword = System.getenv("CM_KEYSTORE_PASSWORD")
-            keyAlias = System.getenv("CM_KEY_ALIAS")
-            keyPassword = System.getenv("CM_KEY_PASSWORD")
+            storePassword = "AnimeWorld2026!"
+            keyAlias = "animeworld"
+            keyPassword = "AnimeWorld2026!"
         }
     }
 
     defaultConfig {
         applicationId = "com.savage.anime"
-        minSdk = 31
-        targetSdk = 35
+        minSdk = 31        // Android 12
+        targetSdk = 35     // Android 15 (ultima versione)
         versionCode = 1
         versionName = "1.0"
     }
