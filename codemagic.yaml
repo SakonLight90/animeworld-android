@@ -1,11 +1,15 @@
 workflows:
   build-android:
-    name: Build APK
+    name: Build APK Firmato
     max_build_duration: 30
     environment:
       flutter: stable
     scripts:
-      - flutter pub get
-      - flutter build apk --release
+      - name: Decodifica keystore
+        script: echo $CM_KEYSTORE | base64 --decode > $FCI_BUILD_DIR/android/app/upload-keystore.jks
+      - name: Installa dipendenze
+        script: flutter pub get
+      - name: Build APK release
+        script: flutter build apk --release
     artifacts:
       - build/app/outputs/flutter-apk/app-release.apk
