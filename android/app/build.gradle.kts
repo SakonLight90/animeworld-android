@@ -18,15 +18,13 @@ android {
         jvmTarget = "1.8"
     }
 
+    // Configurazione firma – il file del keystore sarà creato prima della build
     signingConfigs {
         create("release") {
-            val keystoreBase64: String? = System.getenv("CM_KEYSTORE")
-            if (keystoreBase64 != null) {
-                storeFile = File("$projectDir/upload-keystore.jks")
-                storePassword = System.getenv("CM_KEYSTORE_PASSWORD")
-                keyAlias = System.getenv("CM_KEY_ALIAS")
-                keyPassword = System.getenv("CM_KEY_PASSWORD")
-            }
+            storeFile = file("$projectDir/upload-keystore.jks")
+            storePassword = System.getenv("CM_KEYSTORE_PASSWORD")
+            keyAlias = System.getenv("CM_KEY_ALIAS")
+            keyPassword = System.getenv("CM_KEY_PASSWORD")
         }
     }
 
@@ -53,20 +51,4 @@ android {
 
 flutter {
     source = "../.."
-}
-
-tasks.register("prepareKeystore") {
-    doLast {
-        val keystoreBase64 = System.getenv("CM_KEYSTORE")
-        if (keystoreBase64 != null) {
-            val keystoreFile = File("$projectDir/upload-keystore.jks")
-            keystoreFile.writeBytes(java.util.Base64.getDecoder().decode(keystoreBase64))
-        }
-    }
-}
-
-tasks.whenTaskAdded {
-    if (name == "preReleaseBuild") {
-        dependsOn("prepareKeystore")
-    }
 }
