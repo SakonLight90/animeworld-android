@@ -18,10 +18,9 @@ android {
         jvmTarget = "1.8"
     }
 
-    // Configurazione firma – il file del keystore sarà creato prima della build
     signingConfigs {
         create("release") {
-            storeFile = file("$projectDir/upload-keystore.jks")
+            storeFile = file("upload-keystore.jks")
             storePassword = System.getenv("CM_KEYSTORE_PASSWORD")
             keyAlias = System.getenv("CM_KEY_ALIAS")
             keyPassword = System.getenv("CM_KEY_PASSWORD")
