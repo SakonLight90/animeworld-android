@@ -5,8 +5,21 @@ workflows:
     environment:
       flutter: stable
     scripts:
+      - name: Verifica variabili obbligatorie
+        script: |
+          missing=""
+          if [ -z "$CM_KEYSTORE" ]; then missing="$missing CM_KEYSTORE"; fi
+          if [ -z "$CM_KEYSTORE_PASSWORD" ]; then missing="$missing CM_KEYSTORE_PASSWORD"; fi
+          if [ -z "$CM_KEY_PASSWORD" ]; then missing="$missing CM_KEY_PASSWORD"; fi
+          if [ -z "$CM_KEY_ALIAS" ]; then missing="$missing CM_KEY_ALIAS"; fi
+          if [ -n "$missing" ]; then
+            echo "ERRORE: le seguenti variabili d'ambiente non sono impostate:$missing"
+            exit 1
+          else
+            echo "Tutte le variabili del keystore sono presenti."
+          fi
       - name: Decodifica keystore
-        script: echo $CM_KEYSTORE | base64 --decode > $FCI_BUILD_DIR/android/app/upload-keystore.jks
+        script: echo "$CM_KEYSTORE" | base64 --decode > android/app/upload-keystore.jks
       - name: Installa dipendenze
         script: flutter pub get
       - name: Build APK release
