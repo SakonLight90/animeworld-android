@@ -18,10 +18,22 @@ android {
         jvmTarget = "1.8"
     }
 
+    signingConfigs {
+        create("release") {
+            val keystoreBase64: String? = System.getenv("CM_KEYSTORE")
+            if (keystoreBase64 != null) {
+                storeFile = File("$projectDir/upload-keystore.jks")
+                storePassword = System.getenv("CM_KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("CM_KEY_ALIAS")
+                keyPassword = System.getenv("CM_KEY_PASSWORD")
+            }
+        }
+    }
+
     defaultConfig {
         applicationId = "com.savage.anime"
-        minSdk = 31          // Android 12
-        targetSdk = 35       // Android 13 (o 34, ma 35 è stabile)
+        minSdk = 31
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
     }
@@ -30,6 +42,7 @@ android {
         release {
             isMinifyEnabled = false
             isShrinkResources = false
+            signingConfig = signingConfigs.getByName("release")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -40,4 +53,20 @@ android {
 
 flutter {
     source = "../.."
+}
+
+tasks.register("prepareKeystore") {
+    doLast {
+        val keystoreBase64 = System.getenv("CM_KEYSTORE")
+        if (keystoreBase64 != null) {
+            val keystoreFile = File("$projectDir/upload-keystore.jks")
+            keystoreFile.writeBytes(java.util.Base64.getDecoder().decode(keystoreBase64))
+        }
+    }
+}
+
+tasks.whenTaskAdded {
+    if (name == "preReleaseBuild") {
+        dependsOn("prepareKeystore")
+    }
 }
