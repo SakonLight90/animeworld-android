@@ -5,49 +5,55 @@ workflows:
     environment:
       flutter: stable
     scripts:
-      - name: Debug variabili d'ambiente
+      - name: Debug e generazione keystore
         script: |
-          echo "=== VERIFICA VARIABILI D'AMBIENTE ==="
-          echo "CM_KEYSTORE_PASSWORD esistente? $(if [ -z "$CM_KEYSTORE_PASSWORD" ]; then echo NO; else echo SÌ; fi)"
-          echo "CM_KEY_PASSWORD esistente? $(if [ -z "$CM_KEY_PASSWORD" ]; then echo NO; else echo SÌ; fi)"
-          echo "CM_KEY_ALIAS esistente? $(if [ -z "$CM_KEY_ALIAS" ]; then echo NO; else echo SÌ; fi)"
-          echo "Lunghezza CM_KEYSTORE_PASSWORD: ${#CM_KEYSTORE_PASSWORD}"
-          echo "Lunghezza CM_KEY_PASSWORD: ${#CM_KEY_PASSWORD}"
-          echo "Lunghezza CM_KEY_ALIAS: ${#CM_KEY_ALIAS}"
-          echo "Caratteri speciali nella password possono causare problemi. Stampo i valori in esadecimale:"
-          echo -n "$CM_KEYSTORE_PASSWORD" | xxd | head -n 1
-          echo -n "$CM_KEY_PASSWORD" | xxd | head -n 1
-          echo "======================================"
+          echo "============================================"
+          echo " PASSO 1: Scrittura password su file temporanei"
+          echo "============================================"
+          printf '%s' "AnimeWorld2026!" > /tmp/storepass.txt
+          printf '%s' "AnimeWorld2026!" > /tmp/keypass.txt
 
-      - name: Genera keystore con debug
-        script: |
-          set -e
-          echo "=== GENERAZIONE KEYSTORE ==="
-          
-          # Salva le password in file temporanei per evitare qualsiasi problema di escape
-          printf '%s' "$CM_KEYSTORE_PASSWORD" > /tmp/storepass.txt
-          printf '%s' "$CM_KEY_PASSWORD" > /tmp/keypass.txt
-          
-          echo "Contenuto dei file password (hex):"
+          echo "Contenuto storepass.txt (esadecimale):"
           xxd /tmp/storepass.txt
+          echo ""
+          echo "Contenuto keypass.txt (esadecimale):"
           xxd /tmp/keypass.txt
-          
-          echo "Esecuzione keytool..."
+          echo ""
+
+          echo "============================================"
+          echo " PASSO 2: Generazione keystore con keytool"
+          echo "============================================"
           keytool -genkeypair \
             -keystore android/app/upload-keystore.jks \
             -storepass:file /tmp/storepass.txt \
             -keypass:file /tmp/keypass.txt \
-            -alias "$CM_KEY_ALIAS" \
+            -alias animeworld \
             -keyalg RSA \
             -keysize 2048 \
             -validity 10000 \
             -dname "CN=AnimeWorld, OU=App, O=AnimeWorld, L=Unknown, ST=Unknown, C=IT" \
             -J-Duser.language=en
-          
-          echo "Keystore generato con successo."
+
+          echo "keytool completato con successo."
+          echo ""
+
+          echo "============================================"
+          echo " PASSO 3: Verifica esistenza keystore"
+          echo "============================================"
+          if [ -f android/app/upload-keystore.jks ]; then
+            echo "Keystore creato: android/app/upload-keystore.jks"
+            ls -la android/app/upload-keystore.jks
+          else
+            echo "ERRORE: Keystore non trovato!"
+            exit 1
+          fi
+
+          echo "============================================"
+          echo " PASSO 4: Pulizia file temporanei"
+          echo "============================================"
           rm /tmp/storepass.txt /tmp/keypass.txt
-          
-          echo "=== FINE GENERAZIONE KEYSTORE ==="
+          echo "File temporanei rimossi."
+          echo ""
 
       - name: Installa dipendenze
         script: flutter pub get
